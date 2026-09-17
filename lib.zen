@@ -1,0 +1,31 @@
+extern fn zen_bcrypt_hash(
+  string password,
+  int cost
+) string
+
+extern fn zen_bcrypt_verify(
+  string password,
+  string hash
+) bool
+
+
+struct Bcrypt {
+  hash(string password, int cost) string {
+    return zen_bcrypt_hash(
+      password,
+      cost
+    )
+  }
+
+  verify(string password, string hash) bool {
+    return zen_bcrypt_verify(
+      password,
+      hash
+    )
+  }
+}
+
+
+export(
+  Bcrypt
+)

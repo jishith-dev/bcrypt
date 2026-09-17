@@ -1,0 +1,81 @@
+import (Bcrypt) from "./lib.zen"
+
+Bcrypt b
+
+screen("=== BCRYPT COST TESTS ===")
+
+string password = "hello123"
+
+string hash4 = b.hash(password, 4)
+screen("Cost 4:")
+screen(b.verify(password, hash4))
+
+string hash6 = b.hash(password, 6)
+screen("Cost 6:")
+screen(b.verify(password, hash6))
+
+string hash10 = b.hash(password, 10)
+screen("Cost 10:")
+screen(b.verify(password, hash10))
+
+string hash12 = b.hash(password, 12)
+screen("Cost 12:")
+screen(b.verify(password, hash12))
+
+
+screen("=== EDGE CASE TESTS ===")
+
+string special = "P@ss!#$%^&*()_+"
+string specialHash = b.hash(special, 10)
+
+screen("Special characters:")
+screen(b.verify(special, specialHash))
+screen(b.verify("wrong", specialHash))
+
+
+string unicode = "password-🔐-കേരളം"
+string unicodeHash = b.hash(unicode, 10)
+
+screen("Unicode:")
+screen(b.verify(unicode, unicodeHash))
+screen(b.verify("password", unicodeHash))
+
+
+string empty = ""
+string emptyHash = b.hash(empty, 10)
+
+screen("Empty password:")
+screen(b.verify(empty, emptyHash))
+screen(b.verify("notempty", emptyHash))
+
+
+string longPassword = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+string longHash = b.hash(longPassword, 10)
+
+screen("Long password:")
+screen(b.verify(longPassword, longHash))
+screen(b.verify("a", longHash))
+
+
+screen("=== CASE SENSITIVITY ===")
+
+string caseHash = b.hash("HelloWorld", 10)
+
+screen(b.verify("HelloWorld", caseHash))
+screen(b.verify("helloworld", caseHash))
+screen(b.verify("HELLOWORLD", caseHash))
+
+
+screen("=== RANDOM SALT ===")
+
+string hashA = b.hash("same-password", 10)
+string hashB = b.hash("same-password", 10)
+
+screen("Different hashes:")
+screen(hashA != hashB)
+
+screen("Both verify:")
+screen(b.verify("same-password", hashA))
+screen(b.verify("same-password", hashB))
+
+screen("=== TESTS COMPLETED ===")
