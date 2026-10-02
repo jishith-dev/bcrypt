@@ -11,21 +11,17 @@ extern fn zen_bcrypt_verify(
 
 struct Bcrypt {
   hash(string password, int cost) string {
-    return zen_bcrypt_hash(
-      password,
-      cost
-    )
+    if (cost < 4 || cost > 31) {
+      return ""
+    }
+
+    return zen_bcrypt_hash(password, cost)
   }
 
   verify(string password, string hash) bool {
-    return zen_bcrypt_verify(
-      password,
-      hash
-    )
+    return zen_bcrypt_verify(password, hash)
   }
 }
 
 
-export(
-  Bcrypt
-)
+export(Bcrypt)

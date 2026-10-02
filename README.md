@@ -1,6 +1,9 @@
 
 # bcrypt for Zen
 
+Author: Jishith M P
+Version: 1.0.1 (Latest)
+
 Secure bcrypt password hashing and verification for the Zen programming language.
 
 Powered by the Openwall `crypt_blowfish` implementation with native C integration.
@@ -14,7 +17,6 @@ Powered by the Openwall `crypt_blowfish` implementation with native C integratio
 - Constant-time hash comparison.
 - Python bcrypt compatibility tested.
 - Native C implementation.
-- Zen `extern fn` integration.
 - Supports special characters and Unicode passwords.
 
 ## Installation
@@ -127,24 +129,6 @@ Compatibility testing has been performed between Zen and Python's bcrypt impleme
 | Zen-generated hash → Python verification | Passed |
 | Python-generated hash → Zen verification | Passed |
 
-Tested cost factors:
-
-- Cost 4
-- Cost 6
-- Cost 10
-- Cost 12
-
-Tested cases:
-
-- Basic passwords
-- Wrong passwords
-- Special characters
-- Unicode passwords
-- Empty passwords
-- Long passwords
-- Case sensitivity
-- Random salts
-
 ## Portability
 
 The package uses a portable C bcrypt implementation.
@@ -168,14 +152,6 @@ Native source files:
 - `native/native.c`
 - `native/crypt_blowfish.c`
 - `native/crypt_gensalt.c`
-
-## Version
-
-Current version: **1.0.0**
-
-## Author
-
-Jishith-dev
 
 ## License
 

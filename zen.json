@@ -1,6 +1,6 @@
 {
   "name": "bcrypt",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Jishith-dev",
   "repo": "https://github.com/Jishith-dev/bcrypt",
   "description": "Secure, portable bcrypt password hashing and verification for the Zen programming language, powered by the Openwall crypt_blowfish implementation with native C integration.",

@@ -2,80 +2,127 @@ import (Bcrypt) from "./lib.zen"
 
 Bcrypt b
 
-screen("=== BCRYPT COST TESTS ===")
+screen("=== 1. BASIC (all expect true) ===")
 
 string password = "hello123"
-
-string hash4 = b.hash(password, 4)
-screen("Cost 4:")
-screen(b.verify(password, hash4))
-
-string hash6 = b.hash(password, 6)
-screen("Cost 6:")
-screen(b.verify(password, hash6))
-
-string hash10 = b.hash(password, 10)
-screen("Cost 10:")
-screen(b.verify(password, hash10))
-
-string hash12 = b.hash(password, 12)
-screen("Cost 12:")
-screen(b.verify(password, hash12))
+string h4 = b.hash(password, 4)
+string h10 = b.hash(password, 10)
+screen(h4)
+screen(h10)
+screen(b.verify(password, h4))
+screen(b.verify(password, h10))
 
 
-screen("=== EDGE CASE TESTS ===")
+screen("=== 2. COSTS 4-12 (all expect true) ===")
+
+string h6 = b.hash(password, 6)
+string h8 = b.hash(password, 8)
+string h12 = b.hash(password, 12)
+screen(b.verify(password, h6))
+screen(b.verify(password, h8))
+screen(b.verify(password, h12))
+
+
+screen("=== 3. WRONG PASSWORDS (all expect false) ===")
+
+screen(b.verify("wrong", h10))
+screen(b.verify("hello124", h10))
+screen(b.verify("Hello123", h10))
+screen(b.verify("hello123 ", h10))
+screen(b.verify("hello12", h10))
+screen(b.verify("", h10))
+
+
+screen("=== 4. KNOWN VECTOR (expect true, then false) ===")
+// Standard Openwall crypt_blowfish vector
+string known = "$2a$05$CCCCCCCCCCCCCCCCCCCCC.E5YPO9kmyuRGyh0XouQYb4YMJKvyOeW"
+screen(b.verify("U*U", known))
+screen(b.verify("U*u", known))
+
+
+screen("=== 5. SPECIAL / UNICODE / EMPTY ===")
 
 string special = "P@ss!#$%^&*()_+"
-string specialHash = b.hash(special, 10)
-
-screen("Special characters:")
+string specialHash = b.hash(special, 6)
+screen("special (true, false):")
 screen(b.verify(special, specialHash))
 screen(b.verify("wrong", specialHash))
 
-
 string unicode = "password-🔐-കേരളം"
-string unicodeHash = b.hash(unicode, 10)
-
-screen("Unicode:")
+string unicodeHash = b.hash(unicode, 6)
+screen("unicode (true, false):")
 screen(b.verify(unicode, unicodeHash))
 screen(b.verify("password", unicodeHash))
 
-
 string empty = ""
-string emptyHash = b.hash(empty, 10)
-
-screen("Empty password:")
+string emptyHash = b.hash(empty, 6)
+screen("empty (true, false):")
 screen(b.verify(empty, emptyHash))
 screen(b.verify("notempty", emptyHash))
 
 
-string longPassword = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-string longHash = b.hash(longPassword, 10)
+screen("=== 6. LONG PASSWORDS ===")
 
-screen("Long password:")
-screen(b.verify(longPassword, longHash))
-screen(b.verify("a", longHash))
+string long64 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+string long64Hash = b.hash(long64, 6)
+screen("64 chars (true, false):")
+screen(b.verify(long64, long64Hash))
+screen(b.verify("a", long64Hash))
+
+// bcrypt only uses the first 72 bytes. Both strings below must be
+// 72 'a's followed by extra text, so they match each other (expect true)
+// but a 71-char version must not match (expect false).
+string a72x = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaXYZ"
+string a72y = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaQRS"
+string a71 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+string a72Hash = b.hash(a72x, 6)
+screen("72-byte truncation (true, false):")
+screen(b.verify(a72y, a72Hash))
+screen(b.verify(a71, a72Hash))
 
 
-screen("=== CASE SENSITIVITY ===")
+screen("=== 7. CASE SENSITIVITY (true, false, false) ===")
 
-string caseHash = b.hash("HelloWorld", 10)
-
+string caseHash = b.hash("HelloWorld", 6)
 screen(b.verify("HelloWorld", caseHash))
 screen(b.verify("helloworld", caseHash))
 screen(b.verify("HELLOWORLD", caseHash))
 
 
-screen("=== RANDOM SALT ===")
+screen("=== 8. RANDOM SALT (all expect true) ===")
 
-string hashA = b.hash("same-password", 10)
-string hashB = b.hash("same-password", 10)
-
-screen("Different hashes:")
+string hashA = b.hash("same-password", 6)
+string hashB = b.hash("same-password", 6)
+screen("hashes differ:")
 screen(hashA != hashB)
-
-screen("Both verify:")
+screen("both verify:")
 screen(b.verify("same-password", hashA))
 screen(b.verify("same-password", hashB))
 
+
+screen("=== 9. MALFORMED HASHES (all expect false, must not crash) ===")
+
+screen(b.verify(password, ""))
+screen(b.verify(password, "garbage"))
+screen(b.verify(password, "$2b$10$short"))
+screen(b.verify(password, "$2x$10$CCCCCCCCCCCCCCCCCCCCC.E5YPO9kmyuRGyh0XouQYb4YMJKvyOeW"))
+screen(b.verify(password, "$2a$1x$CCCCCCCCCCCCCCCCCCCCC.E5YPO9kmyuRGyh0XouQYb4YMJKvyOeW"))
+screen(b.verify(password, h10 + "x"))
+
+
+screen("=== 10. TAMPERED HASH (expect false) ===")
+// Same hash with the password and salt intact is true; a hash from a
+// different password must be false.
+string other = b.hash("other-password", 6)
+screen(b.verify(password, other))
+
+
+screen("=== 11. INVALID COST (see how lib.zen reports failure) ===")
+// native hash returns NULL for cost < 4 or > 31.
+// Run each one alone if your lib.zen throws instead of returning empty.
+screen(b.hash(password, 3))
+screen(b.hash(password, 0))
+screen(b.hash(password, 32))
+
 screen("=== TESTS COMPLETED ===")
+
